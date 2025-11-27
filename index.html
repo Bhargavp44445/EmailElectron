@@ -5,17 +5,51 @@
     body { font-family: Arial; padding: 20px; }
     label { display: block; margin-top: 15px; }
     input { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; }
+    button { margin-top: 20px; padding: 10px 20px; cursor: pointer; }
+    #message { margin-top: 10px; color: green; }
   </style>
 </head>
 <body>
   <label>Name
-    <input type="text" id="name">
+    <input type="text" id="name" required>
   </label>
   <label>Phone Number
-    <input type="tel" id="phone">
+    <input type="tel" id="phone" required>
   </label>
   <label>Address
-    <input type="text" id="address">
+    <input type="text" id="address" required>
   </label>
+  <button onclick="submitForm()">Submit</button>
+  <div id="message"></div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+    
+    async function submitForm() {
+      const data = {
+        name: document.getElementById('name').value,
+        phone: document.getElementById('phone').value,
+        address: document.getElementById('address').value
+      };
+      
+      if (!data.name || !data.phone || !data.address) {
+        document.getElementById('message').textContent = 'Please fill all fields';
+        document.getElementById('message').style.color = 'red';
+        return;
+      }
+      
+      try {
+        await ipcRenderer.invoke('send-email', data);
+        document.getElementById('message').textContent = 'Email sent successfully!';
+        document.getElementById('message').style.color = 'green';
+        document.getElementById('name').value = '';
+        document.getElementById('phone').value = '';
+        document.getElementById('address').value = '';
+      } catch (error) {
+        document.getElementById('message').textContent = 'Failed to send email';
+        document.getElementById('message').style.color = 'red';
+      }
+    }
+  </script>
 </body>
 </html>
